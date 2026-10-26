@@ -46,7 +46,7 @@ RAT_MIN, RAT_MAX = 1, 4
 DIFF_MIN, DIFF_MAX = 4, 12
 # on a 1-13 deck the middle card is 7, so 7 is the coin flip. below it the room
 # tends to pass, above it the room tends to refuse.
-DIFF_DEFAULT = 7
+DIFF_DEFAULT = 6
 
 ZEA_CAP = 0.75          # a zealous bloc never votes against, but tops out here
 APA_CAP = 0.25          # an apathetic bloc never votes for, and barely turns out
