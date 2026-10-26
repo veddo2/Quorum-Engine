@@ -274,7 +274,6 @@ class VotePanel(ttk.Frame):
         self.leverage = 3
         self.leverage_used = 0
         self.floors_used: set[str] = set()
-        self.pending_pull: int | None = None
         self.current_record: dict[str, Any] | None = None
         self._save_job: str | None = None
         self._ctx_menu: tk.Menu | None = None
@@ -482,7 +481,6 @@ class VotePanel(ttk.Frame):
         self.leverage_used = 0
         self.floors_used = set()
         self.pool = []
-        self.pending_pull = None
 
         self.results = []
         prev = None
@@ -500,7 +498,7 @@ class VotePanel(ttk.Frame):
             prev = suit
             self.results.append({
                 "name": f["name"], "suit": suit, "rank": rank,
-                "lean": 0, "momentum": momentum, "sway": 0,
+                "lean": 0, "momentum": momentum,
                 "base": 0, "score": 0, "speaker": False,
                 "rally": 0, "turnout_shift": 0, "flag_nudge": 0,
                 "floor_card": card_str(floor[-1]) if floor else "",
@@ -524,7 +522,6 @@ class VotePanel(ttk.Frame):
     def clear_vote(self) -> None:
         self.results = []
         self.pool = []
-        self.pending_pull = None
         self.address = None
         self.current_record = None
         self.leverage_used = 0
@@ -581,7 +578,8 @@ class VotePanel(ttk.Frame):
         # 3. THE FLOOR. every mind is already made, so a speech cannot flip
         #    anyone. it rallies the blocs of its own suit who are on its side,
         #    and dampens the ones who are not. the sign is read off the
-        #    speaker's settled vote, so nothing loops back into the mind.
+        #    speaker's settled vote, so nothing loops back into the mind. this
+        #    lands on its own - nobody clicks a speech onto a target.
         for p in self.pool:
             if p.get("fixed"):
                 continue
@@ -598,7 +596,6 @@ class VotePanel(ttk.Frame):
                 if p["who"] == "You":
                     val = apply_mult(val, listen_mult(roster[i]["rel"]))
                 s += p["sign"] * val
-            s += r.get("sway", 0)
             r["rally"] = max(-cap, min(cap, s))
             # matched to their own side: a rally helps the people who already
             # agree, and the other side's noise turns their own out less
@@ -800,8 +797,8 @@ class VotePanel(ttk.Frame):
                   "their real vote, and every face card in a row makes the speech louder.",
                   "Speeches never change a mind. They only decide who turns out: a speech rallies "
                   "the blocs of its own suit who already agree with it, and dampens the ones who "
-                  "do not. Nobody gets talked across, so the room's direction is the cards' "
-                  "business and the margin is the floor's.",
+                  "do not. It lands on its own - no clicking. Nobody gets talked across, so the "
+                  "room's direction is the cards' business and the margin is the floor's.",
                   "A zealous bloc will not vote against and an apathetic bloc will not vote for "
                   "- the flag sets the outcome. Zeal only costs turnout when it has to drag them "
                   "in; apathy turns out at a quarter every time. The weight column already shows "
@@ -821,16 +818,15 @@ class VotePanel(ttk.Frame):
             w.destroy()
         if self.results:
             if self.pool:
-                for i, p in enumerate(self.pool):
+                for p in self.pool:
                     who = "You" if p["who"] == "You" else p["who"]
                     txt = (f"{p['rank']}{SYM[p['suit']]}  {who} - "
                            f"{'for' if p['sign'] > 0 else 'against'} "
                            f"(rallies {DOMAIN[p['suit']]} "
                            f"{'for' if p['sign'] > 0 else 'against'} by {p['magnitude']})"
                            + (f"   floor x{p['chain']}" if p.get("chain", 1) > 1 else ""))
-                    ttk.Button(self.pool_inner, text=txt,
-                               command=lambda i=i: self.select_pool(i)).pack(
-                        side="left", padx=4, pady=2)
+                    ttk.Label(self.pool_inner, text=txt, padding=(8, 3),
+                              relief="solid", borderwidth=1).pack(side="left", padx=4, pady=2)
             else:
                 ttk.Label(self.pool_inner,
                           text="Nobody has taken the floor. The room is quiet.").pack(anchor="w")
@@ -989,20 +985,15 @@ class VotePanel(ttk.Frame):
                      for i, r in enumerate(self.results)],
         }
 
-        self.hint.config(text=("Pull the selected speech - click someone to land it there."
-                               if self.pending_pull is not None
-                               else "Click a speech above to pull it, or tick an apa / zea box "
-                                    "to flag someone."))
+        self.hint.config(text="Speeches land on their own - every bloc whose card matches a "
+                              "speech's suit is rallied if it agrees and dampened if it does not. "
+                              "Tick an apa / zea box to flag someone.")
 
     def set_summary(self, text: str) -> None:
         self.summary.configure(state="normal")
         self.summary.delete("1.0", "end")
         self.summary.insert("1.0", text)
         self.summary.configure(state="disabled")
-
-    def select_pool(self, i: int) -> None:
-        self.pending_pull = None if self.pending_pull == i else i
-        self.render()
 
     def on_tree_click(self, event: tk.Event) -> None:
         if self.tree.identify_region(event.x, event.y) != "cell":
@@ -1017,9 +1008,6 @@ class VotePanel(ttk.Frame):
             return
         if col == self.zea_col:
             self.toggle_flag(i, "zea")
-            return
-        if self.pending_pull is not None:
-            self.apply_pull(i)
 
     def on_tree_rightclick(self, event: tk.Event) -> None:
         row = self.tree.identify_row(event.y)
@@ -1053,22 +1041,6 @@ class VotePanel(ttk.Frame):
         self.render()
         self.app.status(f"{f['name']} is now "
                         f"{'apathetic' if f['apa'] else 'zealous' if f['zea'] else 'unflagged'}.")
-
-    def apply_pull(self, target: int) -> None:
-        idx = self.pending_pull
-        if idx is None:
-            return
-        p = self.pool[idx]
-        r = self.results[target]
-        cap = self.sway_cap()
-        val = p["magnitude"]
-        if p["who"] == "You":
-            val = apply_mult(val, listen_mult(self.roster()[target]["rel"]))
-        r["sway"] = max(-cap, min(cap, r.get("sway", 0) + p["sign"] * val))
-        del self.pool[idx]
-        self.pending_pull = None
-        self.recompute()
-        self.render()
 
     def record_vote(self) -> None:
         if not self.current_record:
@@ -1296,7 +1268,7 @@ class QuorumApp(tk.Tk):
                           "difference.\n"
                           "A bloc's own card decides its mind. Speeches never change a mind - "
                           "they only decide who turns out, rallying their own side and dampening "
-                          "the other.\n"
+                          "the other. A speech lands automatically on every matching suit.\n"
                           "The apa / zea checkboxes live on the vote tab, next to each faction.   "
                           "Tick zealous if the bloc is committed - it will not vote against, and "
                           "comes in for the bill at three-quarter if the read had it against.   "
