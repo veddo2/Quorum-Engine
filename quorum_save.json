@@ -1,0 +1,204 @@
+{
+  "factions": [
+    {
+      "name": "The Grange (farm families)",
+      "ratings": {
+        "h": 4,
+        "d": 3,
+        "c": 2,
+        "s": 1
+      },
+      "rel": 1,
+      "wt": 5,
+      "hook": "seed, labour, food",
+      "apa": false,
+      "zea": false
+    },
+    {
+      "name": "Mill hands",
+      "ratings": {
+        "h": 2,
+        "d": 4,
+        "c": 3,
+        "s": 1
+      },
+      "rel": 0,
+      "wt": 4,
+      "hook": "fuel, muscle, machines",
+      "apa": false,
+      "zea": false
+    },
+    {
+      "name": "The congregation",
+      "ratings": {
+        "h": 3,
+        "d": 2,
+        "c": 1,
+        "s": 4
+      },
+      "rel": 2,
+      "wt": 4,
+      "hook": "legitimacy, the pulpit",
+      "apa": false,
+      "zea": false
+    },
+    {
+      "name": "Clinic staff",
+      "ratings": {
+        "h": 4,
+        "d": 1,
+        "c": 2,
+        "s": 3
+      },
+      "rel": 3,
+      "wt": 2,
+      "hook": "medicine, expertise",
+      "apa": false,
+      "zea": false
+    },
+    {
+      "name": "Prepper compound",
+      "ratings": {
+        "h": 1,
+        "d": 3,
+        "c": 4,
+        "s": 2
+      },
+      "rel": -2,
+      "wt": 3,
+      "hook": "guns, generators",
+      "apa": false,
+      "zea": false
+    },
+    {
+      "name": "Refugee families",
+      "ratings": {
+        "h": 4,
+        "d": 2,
+        "c": 3,
+        "s": 1
+      },
+      "rel": 1,
+      "wt": 3,
+      "hook": "gratitude, willing hands",
+      "apa": false,
+      "zea": false
+    },
+    {
+      "name": "The old-timers",
+      "ratings": {
+        "h": 1,
+        "d": 2,
+        "c": 3,
+        "s": 4
+      },
+      "rel": 0,
+      "wt": 2,
+      "hook": "memory, precedent",
+      "apa": false,
+      "zea": false
+    },
+    {
+      "name": "The teens",
+      "ratings": {
+        "h": 2,
+        "d": 4,
+        "c": 3,
+        "s": 1
+      },
+      "rel": 0,
+      "wt": 3,
+      "hook": "legs, nerve, gossip",
+      "apa": false,
+      "zea": false
+    }
+  ],
+  "council": [
+    {
+      "name": "Mayor Ruth Alvarez",
+      "ratings": {
+        "h": 3,
+        "d": 2,
+        "c": 1,
+        "s": 4
+      },
+      "rel": 1,
+      "wt": 1,
+      "hook": "tired, wants consensus, hates a scene",
+      "apa": false,
+      "zea": false
+    },
+    {
+      "name": "Deacon Pike",
+      "ratings": {
+        "h": 4,
+        "d": 2,
+        "c": 1,
+        "s": 3
+      },
+      "rel": 2,
+      "wt": 1,
+      "hook": "moral authority, keeps score of favours",
+      "apa": false,
+      "zea": false
+    },
+    {
+      "name": "Harlan Voss",
+      "ratings": {
+        "h": 2,
+        "d": 4,
+        "c": 3,
+        "s": 1
+      },
+      "rel": 0,
+      "wt": 1,
+      "hook": "mill owner, counts every barrel twice",
+      "apa": false,
+      "zea": false
+    },
+    {
+      "name": "Sgt. Mears",
+      "ratings": {
+        "h": 1,
+        "d": 3,
+        "c": 4,
+        "s": 2
+      },
+      "rel": -1,
+      "wt": 1,
+      "hook": "ex-army, thinks only about the perimeter",
+      "apa": false,
+      "zea": false
+    },
+    {
+      "name": "Dr. Chen",
+      "ratings": {
+        "h": 4,
+        "d": 1,
+        "c": 2,
+        "s": 3
+      },
+      "rel": 3,
+      "wt": 1,
+      "hook": "clinic, exhausted, will not be talked over",
+      "apa": false,
+      "zea": false
+    }
+  ],
+  "history": [],
+  "settings": {
+    "keep_ladders": true,
+    "town": {
+      "difficulty": 6,
+      "bill_title": "Seal the north road and turn back outsiders",
+      "bill_frame": "d",
+      "bill_cost": "h"
+    },
+    "council": {
+      "difficulty": 6,
+      "bill_title": "Grant the clinic the last of the diesel",
+      "bill_frame": "h",
+      "bill_cost": "d"
+    }
+  }
+}
