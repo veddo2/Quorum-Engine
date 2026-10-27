@@ -16,14 +16,6 @@ To vote, each Faction/Person draws a card, and that card tells how they feel and
 
 A face card means that bloc makes their own voice heard. Potentially even swaying the other people in the room.
 
-
-
-## Controls
-
-- Right-click a row, or click the apa / zea boxes, to flag someone.
-- Click a speech to select it, then click someone to land it on them.
-- Ctrl+S saves. The save is a local JSON file beside the script.
-
 ## Privacy
 
 No network calls, no telemetry.
