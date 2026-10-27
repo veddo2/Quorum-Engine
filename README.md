@@ -1,34 +1,22 @@
 # The Quorum Engine
 
-A card-driven engine for running a town vote or council session at the table.
-Deal the hand, watch the room make up its mind, then argue to decide who
-actually turns up.
+A card-driven engine for running a town vote or council session at any table (whether you are running voting for your current party or as a Solo-TTRPG tool). Quorum is system-agnostic and can be used either on the table or using the app that I have made.
 
 ## Running it
 
-Python 3.10 or newer. No dependencies - standard library only.
+There is an executable program that will help you run the game with a quick helper, OR you can follow the rules HERE (IN DEV AT THE MOMENT BUT WILL LINK SHORTLY).
 
-    python quorum_engine.py
-
-On Windows, `pythonw quorum_engine.py` skips the console window.
+All you need is a standard deck of cards, a pencil or pen, and some paper. (Some optional rules involve poker chips as well for more specificity)
 
 ## How it works
 
-The bill serves one domain and spends another. A bloc's *lean* is its rating in
-the served domain, or minus its rating in the spent domain, whichever is
-bigger.
+A bill is put forward. How do the different factions or councilmen vote? This Engine helps guide the factions to vote by their values. Factions have different priorities expressed by the suits of the bill.
 
-Each bloc draws a card. Card value plus lean plus momentum is its score; the
-pass difficulty is the line it must reach to be for the bill. **The card
-decides the mind.**
+To vote, each Faction/Person draws a card, and that card tells how they feel and how they will vote.
 
-A face card means that bloc takes the floor: it draws again for its real vote,
-and every extra face card in a row makes the speech louder.
+A face card means that bloc makes their own voice heard. Potentially even swaying the other people in the room.
 
-**Speeches never change a mind.** They decide turnout - a speech rallies the
-blocs of its own suit who already agree, and dampens the ones who don't.
 
-A zealous bloc will not vote against. An apathetic bloc will not vote for.
 
 ## Controls
 
