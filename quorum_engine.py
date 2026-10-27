@@ -35,26 +35,20 @@ DOMAIN_NOTE = {
 RANKS = ("A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K")
 VALUE = {"A": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6,
          "7": 7, "8": 8, "9": 9, "10": 10, "J": 11, "Q": 12, "K": 13}
-# every face card is the same: a bloc takes the floor and swings its suit by 2
+# every face card is the same
 SPEECH = {"J": 2, "Q": 2, "K": 2}
 WORD = {"J": "jack", "Q": "queen", "K": "king"}
-SWAY_CAP = 4            # the room's ceiling on floor sway, before explosions
+SWAY_CAP = 4
 
 WT_MIN, WT_MAX = 1, 99
 REL_MIN, REL_MAX = -4, 4
 RAT_MIN, RAT_MAX = 1, 4
 DIFF_MIN, DIFF_MAX = 4, 12
-# on a 1-13 deck the middle card is 7, so 7 is the coin flip. below it the room
-# tends to pass, above it the room tends to refuse.
 DIFF_DEFAULT = 6
 
-ZEA_CAP = 0.75          # a zealous bloc never votes against, but tops out here
-APA_CAP = 0.25          # an apathetic bloc never votes for, and barely turns out
+ZEA_CAP = 0.75          
+APA_CAP = 0.25       
 
-# Does the turnout cut bite always, or only when the flag has to change the side
-# the bloc would otherwise vote? False = always, the moment the flag is ticked.
-# Zeal is a loyalty state, so it only costs them when they have to be dragged in.
-# Apathy is a turnout state, so it bites every time.
 APA_ONLY_WHEN_TURNED = False
 ZEA_ONLY_WHEN_HELD = True
 
@@ -64,8 +58,6 @@ DISPOSITION_ORDER = ("Zealous", "Apathetic", "for it, hard", "leans for",
 BOX_ON = "\u2611"
 BOX_OFF = "\u2610"
 
-# one shared column spec for the editor header and every editor row, so the
-# labels can never drift off their widgets. (field, pixel width, stretch?)
 EDITOR_COLS = (
     ("name",  200, True),
     ("hook",  220, True),
@@ -78,7 +70,6 @@ EDITOR_COLS = (
 )
 EDITOR_HEAD = {"name": "name", "hook": "notes", "rel": "rel", "wt": "wt"}
 
-# combobox shows a label; the engine wants a suit key. keep both directions.
 SUIT_LABELS = {k: f"{SYM[k]}  {DOMAIN[k]}" for k in SUITS}
 LABEL_SUIT = {v: k for k, v in SUIT_LABELS.items()}
 SYM_SUIT = {v: k for k, v in SYM.items()}
@@ -117,11 +108,6 @@ DEFAULT_COUNCIL = [
 
 def _data_dir() -> str:
     """Where the save lives.
-
-    Running from source, that is the folder the script sits in. Frozen into an
-    exe, __file__ points inside a temp folder that is wiped on exit, so use the
-    folder the exe sits in instead - and if that folder is not writable (an
-    install under Program Files), fall back to %APPDATA%.
     """
     if getattr(sys, "frozen", False):
         base = os.path.dirname(sys.executable)
@@ -486,9 +472,6 @@ class VotePanel(ttk.Frame):
         prev = None
         for f in facs:
             card = draw()
-            # a face card takes the floor: they draw again for their real vote,
-            # and if that is a face card too, it explodes - keep drawing. every
-            # face card in the run makes the one speech louder by 1.
             floor: list[tuple[str, str]] = []
             while card[1] in SPEECH:
                 floor.append(card)
@@ -541,17 +524,14 @@ class VotePanel(ttk.Frame):
         T = self.difficulty_T()
         roster = self.roster()
 
-        # 1. THE MIND. their own card, the bill's lean, momentum - and nothing
-        #    else. a speech never touches this number.
+        # 1. The card the faction draws
         for i, r in enumerate(results):
             f = roster[i]
             r["lean"] = self.lean(f)
             r["score"] = VALUE[r["rank"]] + r["lean"] + r["momentum"]
             r["base"] = r["score"]
 
-        # 2. THE MIND, SET. the band comes off their own card alone. flags are a
-        #    commitment rather than an argument, so those do set the mind - and
-        #    they set it before anyone speaks.
+        # 2.
         for i, r in enumerate(results):
             f = roster[i]
             r["flag_nudge"] = flag_nudge(f)
@@ -575,11 +555,7 @@ class VotePanel(ttk.Frame):
                 elif not ZEA_ONLY_WHEN_HELD:
                     r["w"] = ZEA_CAP
 
-        # 3. THE FLOOR. every mind is already made, so a speech cannot flip
-        #    anyone. it rallies the blocs of its own suit who are on its side,
-        #    and dampens the ones who are not. the sign is read off the
-        #    speaker's settled vote, so nothing loops back into the mind. this
-        #    lands on its own - nobody clicks a speech onto a target.
+        # 3. THE FLOOR.
         for p in self.pool:
             if p.get("fixed"):
                 continue
@@ -602,7 +578,7 @@ class VotePanel(ttk.Frame):
             on_side = 1 if r["band"] in ("yes", "halfy") else -1
             r["turnout_shift"] = max(-cap, min(cap, r["rally"] * on_side))
 
-        # 4. TURNOUT. the flag cuts it, the floor moves it, and nobody vanishes.
+        # 4. TURNOUT.
         for i, r in enumerate(results):
             f = roster[i]
             base_w = clamp_int(f["wt"], WT_MIN, WT_MIN, WT_MAX)
@@ -678,8 +654,6 @@ class VotePanel(ttk.Frame):
     # -------- reading the room --------
 
     def lean(self, f: dict[str, Any]) -> int:
-        """The bill's pull on this bloc: their rating in the served domain, or
-        minus their rating in the spent domain, whichever is bigger."""
         served = clamp_int(f["ratings"].get(self.frame_suit(), 1), 1, RAT_MIN, RAT_MAX)
         spent = clamp_int(f["ratings"].get(self.cost_suit(), 1), 1, RAT_MIN, RAT_MAX)
         if served > spent:
@@ -689,7 +663,6 @@ class VotePanel(ttk.Frame):
         return 0
 
     def disposition(self, f: dict[str, Any]) -> int:
-        """Their standing read on the bill, before any card is dealt."""
         return self.lean(f) + flag_nudge(f)
 
     def disposition_band(self, score: int) -> tuple[str, str]:
@@ -704,7 +677,6 @@ class VotePanel(ttk.Frame):
         return ("of two minds", "neutral")
 
     def disposition_text(self, f: dict[str, Any]) -> tuple[str, str]:
-        """A flag overrides the reading entirely."""
         if f["apa"]:
             return ("Apathetic", "neutral")
         if f["zea"]:
@@ -715,7 +687,6 @@ class VotePanel(ttk.Frame):
         return self.disposition_text(f)[0]
 
     def outcome_text(self, f: dict[str, Any], r: dict[str, Any]) -> str:
-        """A flag overrides the outcome too - and the tally follows it."""
         if f["apa"]:
             return "Apathetic - against"
         if f["zea"]:
@@ -729,12 +700,6 @@ class VotePanel(ttk.Frame):
         return BOX_ON if on else BOX_OFF
 
     def standing_weight(self, f: dict[str, Any]) -> int:
-        """What this bloc brings if the room reads true. Preview only.
-
-        Apathy is a turnout state, so it shows the quarter straight away.
-        Zeal only costs them when the read has them against, so the preview
-        reads the room the same way the live vote will.
-        """
         wt = clamp_int(f.get("wt"), WT_MIN, WT_MIN, WT_MAX)
         if f["apa"]:
             return max(WT_MIN, math.ceil(wt * APA_CAP))
@@ -1052,9 +1017,7 @@ class VotePanel(ttk.Frame):
         self.app.status("Vote recorded to history.")
 
 
-# --------------------------------------------------------------------------
-# app
-# --------------------------------------------------------------------------
+# ------- app ----------------------------
 
 class QuorumApp(tk.Tk):
 
